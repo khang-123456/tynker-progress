@@ -2,101 +2,87 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>BẤT NGỜ DÀNH CHO BẠN</title>
+    <title>QUÀ TẶNG BẤT NGỜ</title>
     <style>
-        body { margin: 0; background: black; color: white; font-family: Arial, sans-serif; overflow: hidden; }
-        
-        /* Màn hình chờ ban đầu */
+        body { margin: 0; background: black; color: white; overflow: hidden; font-family: sans-serif; }
         #overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #111; z-index: 9999; display: flex; 
+            background: #000; z-index: 9999; display: flex; 
             flex-direction: column; justify-content: center; align-items: center; 
         }
         #start-btn { 
-            padding: 20px 40px; font-size: 25px; background: #007bff; 
-            color: white; border: none; cursor: pointer; border-radius: 50px;
+            padding: 20px 50px; font-size: 25px; background: #28a745; 
+            color: white; border: none; cursor: pointer; border-radius: 10px; font-weight: bold;
         }
-
-        /* Chữ Troll nhấp nháy nhiều màu */
         .troll-text { 
-            position: fixed; top: 20px; width: 100%; text-align: center; 
-            font-size: 50px; font-weight: bold; z-index: 100;
-            animation: rainbow 0.1s infinite; display: none;
+            position: fixed; top: 10px; width: 100%; text-align: center; 
+            font-size: 45px; font-weight: bold; z-index: 100;
+            animation: flash 0.1s infinite; display: none;
         }
-        @keyframes rainbow { 
-            0%{color:red} 20%{color:yellow} 40%{color:lime} 60%{color:cyan} 80%{color:magenta} 100%{color:red} 
-        }
-
+        @keyframes flash { 0% { color: red; } 50% { color: yellow; } 100% { color: lime; } }
         #video-container { width: 100vw; height: 100vh; }
-        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
-
-        /* Nút thoát chỉ hiện sau 30 giây */
+        iframe { width: 100%; height: 100%; border: none; }
         #exit-btn { 
-            display: none; position: fixed; bottom: 40px; left: 50%; 
+            display: none; position: fixed; bottom: 30px; left: 50%; 
             transform: translateX(-50%); padding: 15px 40px; 
-            background: white; color: black; font-weight: bold; 
-            font-size: 20px; border-radius: 10px; z-index: 1000;
+            background: white; color: black; font-weight: bold; z-index: 1000;
         }
     </style>
 </head>
-<body onmouseleave="preventExit()">
+<body>
 
     <div id="overlay">
-        <h1>Bạn có một tin nhắn mới!</h1>
-        <button id="start-btn" onclick="startTroll()">NHẤN ĐỂ XEM ✉️</button>
+        <h2>Bạn nhận được một món quà từ bạn bè!</h2>
+        <button id="start-btn" onclick="activateTroll()">BẤM ĐỂ MỞ QUÀ 🎁</button>
     </div>
 
-    <div id="troll-msg" class="troll-text">🤡 TROLLLLLLLL! 🤡</div>
+    <div id="troll-msg" class="troll-text">🤡 YOU HAVE BEEN TROLLED! 🤡</div>
     <div id="video-container"></div>
-    <button id="exit-btn" onclick="letFree()">THOÁT (OK BẠN THẮNG)</button>
+    <button id="exit-btn" onclick="letGo()">OK, BẠN ĐÃ THOÁT!</button>
 
     <script>
-        let canExit = false;
+        let isTrolling = false;
 
-        function startTroll() {
-            // Vào chế độ toàn màn hình
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-
+        function activateTroll() {
+            isTrolling = true;
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('troll-msg').style.display = 'block';
 
-            // Nhúng video Rick Roll
+            // Ghi đè nội dung video vào để ép chạy
             document.getElementById('video-container').innerHTML = `
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&rel=0" 
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&modestbranding=1" 
                 allow="autoplay; fullscreen"></iframe>
             `;
 
-            // Cảnh báo khi định tắt tab
-            window.onbeforeunload = function() { return "Đừng chạy trốn!"; };
+            // Cố gắng vào toàn màn hình
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
 
-            // Sau 30 giây mới cho phép thoát
+            // 1. Cảnh báo khi định đóng tab (Hiện hộp thoại xác nhận)
+            window.onbeforeunload = function() {
+                return "Bạn chưa xem hết 30 giây!";
+            };
+
+            // 2. Hiện nút thoát sau 30 giây
             setTimeout(() => {
-                canExit = true;
+                isTrolling = false;
+                window.onbeforeunload = null; // Tắt cảnh báo đóng tab
                 document.getElementById('exit-btn').style.display = 'block';
-                document.getElementById('troll-msg').innerText = "OK, XONG 30 GIÂY!";
+                document.getElementById('troll-msg').innerText = "HẾT GIỜ TROLL!";
             }, 30000);
         }
 
-        function preventExit() {
-            if(!canExit && document.getElementById('overlay').style.display === 'none') {
-                alert("Hãy xem nốt 30 giây đã nào!");
-                // Cố gắng nhảy lại vào toàn màn hình
-                document.documentElement.requestFullscreen();
+        // 3. Mẹo gây khó dễ: Nếu họ click ra ngoài hoặc định chuyển tab, hiện alert
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isTrolling) {
+                alert("Định chạy đi đâu? Quay lại xem nốt đi!");
             }
-        }
+        });
 
-        function letFree() {
-            window.onbeforeunload = null;
-            alert("Tạm biệt nhé!");
+        function letGo() {
+            alert("Chúc mừng bạn đã kiên nhẫn!");
             window.location.href = "https://google.com";
         }
-
-        // Chặn phím tắt cơ bản
-        document.addEventListener('keydown', e => {
-            if (e.key === "Escape" || e.key === "F12") e.preventDefault();
-        });
     </script>
 </body>
 </html>
