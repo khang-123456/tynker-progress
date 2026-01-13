@@ -3,70 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BẤT NGỜ CHƯA?</title>
+    <title>QUÀ TẶNG BẤT NGỜ</title>
     <style>
-        body {
-            margin: 0; padding: 0; background: black;
-            color: white; text-align: center; font-family: 'Arial', sans-serif;
-            overflow: hidden;
-        }
-        h1 { font-size: 40px; color: yellow; margin-top: 10px; }
+        body { margin: 0; padding: 0; background: black; color: white; overflow: hidden; font-family: sans-serif; }
         
-        /* Chế độ video chiếm toàn màn hình */
-        .video-wrapper {
-            position: fixed; top: 80px; left: 0; width: 100%; height: calc(100% - 80px);
+        /* Màn hình chờ bắt lỗi trình duyệt */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; display: flex; 
+            flex-direction: column; justify-content: center; align-items: center;
         }
-        iframe { width: 100%; height: 100%; border: none; }
+        #gift-btn {
+            padding: 20px 50px; font-size: 25px; background: #ff0000;
+            color: white; border: none; cursor: pointer; border-radius: 10px; font-weight: bold;
+        }
 
-        /* Nút thoát bị ẩn */
-        #exit-btn {
-            display: none; /* Mặc định ẩn */
-            position: fixed; bottom: 20px; right: 20px;
-            padding: 15px 30px; background: red; color: white;
-            border: none; cursor: pointer; font-weight: bold; font-size: 20px;
-            border-radius: 10px; z-index: 100;
+        /* Chữ Troll nhấp nháy */
+        .troll-text {
+            position: absolute; top: 5%; width: 100%; text-align: center;
+            font-size: 50px; font-weight: bold; z-index: 10;
+            animation: flash 0.1s infinite;
         }
-        #timer { font-size: 20px; color: #ff4444; }
+        @keyframes flash {
+            0% { color: red; } 50% { color: yellow; } 100% { color: lime; }
+        }
+
+        #video-container { width: 100vw; height: 100vh; }
+        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+
+        #exit-btn {
+            display: none; position: fixed; bottom: 50px; left: 50%;
+            transform: translateX(-50%); padding: 15px 40px;
+            background: lime; color: black; font-weight: bold; font-size: 20px;
+            border: none; cursor: pointer; z-index: 1000;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🤡 TROLLLLLL! 🤡</h1>
-    <p id="timer">Bạn phải xem video này trong <span id="seconds">30</span> giây nữa mới có thể thoát!</p>
-
-    <div class="video-wrapper">
-        <iframe id="rick-video" 
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&rel=0" 
-            allow="autoplay">
-        </iframe>
+    <div id="overlay">
+        <h1>Bạn có 1 món quà đang chờ...</h1>
+        <button id="gift-btn" onclick="startTroll()">NHẤN ĐỂ MỞ 🎁</button>
     </div>
 
-    <button id="exit-btn" onclick="alert('Chúc mừng bạn đã thoát thành công!'); window.location.href='https://google.com';">
-        NHẤN VÀO ĐÂY ĐỂ THOÁT
-    </button>
+    <div id="troll-msg" class="troll-text" style="display:none;">YOU HAVE BEEN TROLLED! 🤡</div>
+
+    <div id="video-container"></div>
+
+    <button id="exit-btn" onclick="letFree()">THOÁT RA NGAY</button>
 
     <script>
-        let timeLeft = 30;
-        const timerElement = document.getElementById('seconds');
-        const exitBtn = document.getElementById('exit-btn');
-        const timerText = document.getElementById('timer');
+        function startTroll() {
+            // 1. Vào chế độ toàn màn hình
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
 
-        // Đếm ngược 30 giây
-        const countdown = setInterval(() => {
-            timeLeft--;
-            timerElement.innerText = timeLeft;
+            // 2. Ẩn nút quà và hiện chữ Troll
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('troll-msg').style.display = 'block';
 
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                timerText.innerHTML = "OK, bạn có thể thoát bây giờ!";
-                exitBtn.style.display = "block"; // Hiện nút thoát
+            // 3. Chèn video Rick Roll tự động phát
+            document.getElementById('video-container').innerHTML = `
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&rel=0" 
+                allow="autoplay; fullscreen"></iframe>
+            `;
+
+            // 4. Cơ chế "khóa" 30 giây
+            setTimeout(() => {
+                document.getElementById('exit-btn').style.display = 'block';
+                document.getElementById('troll-msg').innerText = "OK, THA ĐẤY!";
+                // Tắt cảnh báo khi thoát
+                window.onbeforeunload = null;
+            }, 30000);
+
+            // 5. Ngăn chặn thoát trang bằng phím hoặc chuột
+            window.onbeforeunload = function() {
+                return "Bạn chưa xem hết 30 giây! Ở lại xem tiếp đi!";
+            };
+        }
+
+        function letFree() {
+            alert("Lần sau bớt tò mò nhé!");
+            window.location.href = "https://google.com";
+        }
+
+        // Vô hiệu hóa phím F12 và chuột phải để khó thoát hơn
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function (e) {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) {
+                return false;
             }
-        }, 1000);
-
-        // Hiện cảnh báo khi người dùng cố tình tắt tab hoặc load lại trang
-        window.onbeforeunload = function() {
-            return "Bạn chưa xem hết 30 giây mà? Ở lại đi!";
-        };
+        }
     </script>
 </body>
 </html>
